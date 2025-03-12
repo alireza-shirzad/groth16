@@ -21,7 +21,7 @@ use ark_r1cs_std::{
     pairing::PairingVar,
     uint8::UInt8,
 };
-use ark_relations::r1cs::{Namespace, SynthesisError};
+use ark_relations::gr1cs::{Namespace, SynthesisError};
 use ark_std::{borrow::Borrow, marker::PhantomData, vec::Vec};
 
 type BasePrimeField<E> = <<E as Pairing>::BaseField as Field>::BasePrimeField;
@@ -496,7 +496,7 @@ mod test {
             }
 
             for _ in 0..self.num_constraints {
-                cs.enforce_constraint(lc!() + a, lc!() + b, lc!() + c)
+                cs.enforce_r1cs_constraint(lc!() + a, lc!() + b, lc!() + c)
                     .unwrap();
             }
             Ok(())

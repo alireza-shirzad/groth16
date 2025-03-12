@@ -3,8 +3,8 @@ use ark_poly::EvaluationDomain;
 use ark_std::{cfg_iter, cfg_iter_mut, vec};
 
 use crate::Vec;
-use ark_relations::r1cs::{
-    ConstraintMatrices, ConstraintSystemRef, Result as R1CSResult, SynthesisError,
+use ark_relations::gr1cs::{
+    ConstraintSystemRef, Matrix, Result as R1CSResult, SynthesisError, R1CS_PREDICATE_LABEL
 };
 use core::ops::{AddAssign, Deref};
 
@@ -58,7 +58,7 @@ pub trait R1CSToQAP {
     fn witness_map<F: PrimeField, D: EvaluationDomain<F>>(
         prover: ConstraintSystemRef<F>,
     ) -> Result<Vec<F>, SynthesisError> {
-        let matrices = prover.to_matrices().unwrap();
+        let matrices = &prover.to_matrices().unwrap()[R1CS_PREDICATE_LABEL];
         let num_inputs = prover.num_instance_variables();
         let num_constraints = prover.num_constraints();
 
@@ -81,7 +81,7 @@ pub trait R1CSToQAP {
 
     /// Computes a QAP witness corresponding to the R1CS witness defined by `cs`.
     fn witness_map_from_matrices<F: PrimeField, D: EvaluationDomain<F>>(
-        matrices: &ConstraintMatrices<F>,
+        matrices: &[Matrix<F>],
         num_inputs: usize,
         num_constraints: usize,
         full_assignment: &[F],
@@ -107,7 +107,7 @@ impl R1CSToQAP for LibsnarkReduction {
         cs: ConstraintSystemRef<F>,
         t: &F,
     ) -> R1CSResult<(Vec<F>, Vec<F>, Vec<F>, F, usize, usize)> {
-        let matrices = cs.to_matrices().unwrap();
+        let matrices = &cs.to_matrices().unwrap()[R1CS_PREDICATE_LABEL];
         let domain_size = cs.num_constraints() + cs.num_instance_variables();
         let domain = D::new(domain_size).ok_or(SynthesisError::PolynomialDegreeTooLarge)?;
         let domain_size = domain.size();
@@ -133,13 +133,13 @@ impl R1CSToQAP for LibsnarkReduction {
         }
 
         for (i, u_i) in u.iter().enumerate().take(cs.num_constraints()) {
-            for &(ref coeff, index) in &matrices.a[i] {
+            for &(ref coeff, index) in &matrices[0][i] {
                 a[index] += &(*u_i * coeff);
             }
-            for &(ref coeff, index) in &matrices.b[i] {
+            for &(ref coeff, index) in &matrices[1][i] {
                 b[index] += &(*u_i * coeff);
             }
-            for &(ref coeff, index) in &matrices.c[i] {
+            for &(ref coeff, index) in &matrices[2][i] {
                 c[index] += &(*u_i * coeff);
             }
         }
@@ -148,7 +148,7 @@ impl R1CSToQAP for LibsnarkReduction {
     }
 
     fn witness_map_from_matrices<F: PrimeField, D: EvaluationDomain<F>>(
-        matrices: &ConstraintMatrices<F>,
+        matrices: &[Matrix<F>],
         num_inputs: usize,
         num_constraints: usize,
         full_assignment: &[F],
@@ -163,8 +163,8 @@ impl R1CSToQAP for LibsnarkReduction {
 
         cfg_iter_mut!(a[..num_constraints])
             .zip(cfg_iter_mut!(b[..num_constraints]))
-            .zip(cfg_iter!(&matrices.a))
-            .zip(cfg_iter!(&matrices.b))
+            .zip(cfg_iter!(&matrices[0]))
+            .zip(cfg_iter!(&matrices[1]))
             .for_each(|(((a, b), at_i), bt_i)| {
                 *a = evaluate_constraint(&at_i, &full_assignment);
                 *b = evaluate_constraint(&bt_i, &full_assignment);
@@ -192,7 +192,7 @@ impl R1CSToQAP for LibsnarkReduction {
         cfg_iter_mut!(c[..num_constraints])
             .enumerate()
             .for_each(|(i, c)| {
-                *c = evaluate_constraint(&matrices.c[i], &full_assignment);
+                *c = evaluate_constraint(&matrices[2][i], &full_assignment);
             });
 
         domain.ifft_in_place(&mut c);

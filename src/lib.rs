@@ -41,14 +41,12 @@ pub mod constraints;
 #[cfg(test)]
 mod test;
 
-pub use self::data_structures::*;
-pub use self::verifier::*;
+pub use self::{data_structures::*, verifier::*};
 
 use ark_crypto_primitives::snark::*;
 use ark_ec::pairing::Pairing;
-use ark_relations::r1cs::{ConstraintSynthesizer, SynthesisError};
-use ark_std::rand::RngCore;
-use ark_std::{marker::PhantomData, vec::Vec};
+use ark_relations::gr1cs::{ConstraintSynthesizer, SynthesisError};
+use ark_std::{marker::PhantomData, rand::RngCore, vec::Vec};
 use r1cs_to_qap::{LibsnarkReduction, R1CSToQAP};
 
 /// The SNARK of [[Groth16]](https://eprint.iacr.org/2016/260.pdf).
@@ -66,7 +64,11 @@ impl<E: Pairing, QAP: R1CSToQAP> SNARK<E::ScalarField> for Groth16<E, QAP> {
     fn circuit_specific_setup<C: ConstraintSynthesizer<E::ScalarField>, R: RngCore>(
         circuit: C,
         rng: &mut R,
-    ) -> Result<(Self::ProvingKey, Self::VerifyingKey), Self::Error> {
+    ) -> Result<(Self::ProvingKey, Self::VerifyingKey), Self::Error>
+    where
+        C: ConstraintSynthesizer<E::ScalarField>,
+        R: RngCore,
+    {
         let pk = Self::generate_random_parameters_with_reduction(circuit, rng)?;
         let vk = pk.vk.clone();
 

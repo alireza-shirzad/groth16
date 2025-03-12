@@ -2,7 +2,7 @@ use crate::{r1cs_to_qap::R1CSToQAP, Groth16, ProvingKey, Vec, VerifyingKey};
 use ark_ec::{pairing::Pairing, scalar_mul::BatchMulPreprocessing, CurveGroup};
 use ark_ff::{Field, UniformRand, Zero};
 use ark_poly::{EvaluationDomain, GeneralEvaluationDomain};
-use ark_relations::r1cs::{
+use ark_relations::gr1cs::{
     ConstraintSynthesizer, ConstraintSystem, OptimizationGoal, Result as R1CSResult,
     SynthesisError, SynthesisMode,
 };

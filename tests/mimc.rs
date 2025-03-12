@@ -99,7 +99,7 @@ impl<'a, F: Field> ConstraintSynthesizer<F> for MiMCDemo<'a, F> {
             let tmp =
                 cs.new_witness_variable(|| tmp_value.ok_or(SynthesisError::AssignmentMissing))?;
 
-            cs.enforce_constraint(
+            cs.enforce_r1cs_constraint(
                 lc!() + xl + (self.constants[i], Variable::One),
                 lc!() + xl + (self.constants[i], Variable::One),
                 lc!() + tmp,
@@ -123,7 +123,7 @@ impl<'a, F: Field> ConstraintSynthesizer<F> for MiMCDemo<'a, F> {
                 cs.new_witness_variable(|| new_xl_value.ok_or(SynthesisError::AssignmentMissing))?
             };
 
-            cs.enforce_constraint(
+            cs.enforce_r1cs_constraint(
                 lc!() + tmp,
                 lc!() + xl + (self.constants[i], Variable::One),
                 lc!() + new_xl - xr,

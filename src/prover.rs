@@ -2,10 +2,11 @@ use crate::{r1cs_to_qap::R1CSToQAP, Groth16, Proof, ProvingKey, VerifyingKey};
 use ark_ec::{pairing::Pairing, AffineRepr, CurveGroup, VariableBaseMSM};
 use ark_ff::{Field, PrimeField, UniformRand, Zero};
 use ark_poly::GeneralEvaluationDomain;
-use ark_relations::r1cs::{
-    ConstraintMatrices, ConstraintSynthesizer, ConstraintSystem, OptimizationGoal,
+use ark_relations::gr1cs::{
+    ConstraintSynthesizer, ConstraintSystem, OptimizationGoal,
     Result as R1CSResult,
 };
+use ark_relations::utils::matrix::Matrix;
 use ark_std::rand::Rng;
 use ark_std::{
     cfg_into_iter, cfg_iter,
@@ -27,7 +28,7 @@ impl<E: Pairing, QAP: R1CSToQAP> Groth16<E, QAP> {
         pk: &ProvingKey<E>,
         r: E::ScalarField,
         s: E::ScalarField,
-        matrices: &ConstraintMatrices<E::ScalarField>,
+        matrices: &[Matrix<E::ScalarField>],
         num_inputs: usize,
         num_constraints: usize,
         full_assignment: &[E::ScalarField],

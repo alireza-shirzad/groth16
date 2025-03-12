@@ -55,10 +55,10 @@ impl<F: PrimeField> ConstraintSynthesizer<F> for DummyCircuit<F> {
         }
 
         for _ in 0..self.num_constraints - 1 {
-            cs.enforce_constraint(lc!() + a, lc!() + b, lc!() + c)?;
+            cs.enforce_r1cs_constraint(lc!() + a, lc!() + b, lc!() + c)?;
         }
 
-        cs.enforce_constraint(lc!(), lc!(), lc!())?;
+        cs.enforce_r1cs_constraint(lc!(), lc!(), lc!())?;
 
         Ok(())
     }
