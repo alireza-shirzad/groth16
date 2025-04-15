@@ -208,8 +208,8 @@ impl<E: Pairing, QAP: R1CSToQAP> Groth16<E, QAP> {
             r,
             s,
             &h,
-            &prover.instance_assignment[1..],
-            &prover.witness_assignment,
+            &prover.instance_assignment().unwrap()[1..],
+            &prover.witness_assignment().unwrap(),
         )?;
 
         end_timer!(prover_time);

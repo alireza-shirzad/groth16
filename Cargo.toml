@@ -29,10 +29,7 @@ ark-serialize = { version = "0.5.0", default-features = false, features = [
 ark-poly = { version = "0.5.0", default-features = false }
 ark-std = { version = "0.5.0", default-features = false }
 ark-relations = { git = "https://github.com/arkworks-rs/snark.git", default-features = true }
-ark-crypto-primitives = { git = "https://github.com/alireza-shirzad/crypto-primitives.git", default-features = false, features = [
-    "snark",
-    "sponge",
-] }
+ark-crypto-primitives = { git = "https://github.com/alireza-shirzad/crypto-primitives.git", default-features = false, features = [ "snark", "sponge" ] }
 ark-r1cs-std = { git = "https://github.com/arkworks-rs/r1cs-std.git", default-features = true, optional = true }
 tracing = { version = "0.1", default-features = false, features = [
     "attributes",
@@ -122,3 +119,6 @@ lto = "thin"
 incremental = true
 debug-assertions = true
 debug = true
+
+[patch.crates-io]
+ark-relations = { git = "https://github.com/arkworks-rs/snark.git" }

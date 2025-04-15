@@ -66,8 +66,8 @@ pub trait R1CSToQAP {
         let prover = cs.deref();
 
         let full_assignment = [
-            prover.instance_assignment.as_slice(),
-            prover.witness_assignment.as_slice(),
+            prover.instance_assignment().unwrap(),
+            prover.witness_assignment().unwrap(),
         ]
         .concat();
 
