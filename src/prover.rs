@@ -3,8 +3,7 @@ use ark_ec::{pairing::Pairing, AffineRepr, CurveGroup, VariableBaseMSM};
 use ark_ff::{Field, PrimeField, UniformRand, Zero};
 use ark_poly::GeneralEvaluationDomain;
 use ark_relations::gr1cs::{
-    ConstraintSynthesizer, ConstraintSystem, OptimizationGoal,
-    Result as R1CSResult,
+    ConstraintSynthesizer, ConstraintSystem, OptimizationGoal, Result as R1CSResult, SynthesisMode,
 };
 use ark_relations::utils::matrix::Matrix;
 use ark_std::rand::Rng;
@@ -187,6 +186,10 @@ impl<E: Pairing, QAP: R1CSToQAP> Groth16<E, QAP> {
 
         // Set the optimization goal
         cs.set_optimization_goal(OptimizationGoal::Constraints);
+        cs.set_mode(SynthesisMode::Prove {
+            construct_matrices: true,
+            generate_lc_assignments: false,
+        });
 
         // Synthesize the circuit.
         let synthesis_time = start_timer!(|| "Constraint synthesis");

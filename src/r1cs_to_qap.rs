@@ -4,7 +4,7 @@ use ark_std::{cfg_iter, cfg_iter_mut, vec};
 
 use crate::Vec;
 use ark_relations::gr1cs::{
-    ConstraintSystemRef, Matrix, Result as R1CSResult, SynthesisError, R1CS_PREDICATE_LABEL
+    ConstraintSystemRef, Matrix, Result as R1CSResult, SynthesisError, R1CS_PREDICATE_LABEL,
 };
 use core::ops::{AddAssign, Deref};
 
