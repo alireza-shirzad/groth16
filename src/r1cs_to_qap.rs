@@ -162,9 +162,9 @@ impl R1CSToQAP for LibsnarkReduction {
         let mut b = vec![zero; domain_size];
 
         cfg_iter_mut!(a[..num_constraints])
-            .zip(cfg_iter_mut!(b[..num_constraints]))
-            .zip(cfg_iter!(&matrices[0]))
-            .zip(cfg_iter!(&matrices[1]))
+            .zip(&mut b[..num_constraints])
+            .zip(&matrices[0])
+            .zip(&matrices[1])
             .for_each(|(((a, b), at_i), bt_i)| {
                 *a = evaluate_constraint(&at_i, &full_assignment);
                 *b = evaluate_constraint(&bt_i, &full_assignment);
