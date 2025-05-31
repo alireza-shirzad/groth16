@@ -26,10 +26,6 @@ impl<E: Pairing, QAP: R1CSToQAP> Groth16<E, QAP> {
         pvk: &PreparedVerifyingKey<E>,
         public_inputs: &[E::ScalarField],
     ) -> R1CSResult<E::G1> {
-        if (public_inputs.len() + 1) != pvk.vk.gamma_abc_g1.len() {
-            return Err(SynthesisError::MalformedVerifyingKey);
-        }
-
         let mut g_ic = pvk.vk.gamma_abc_g1[0].into_group();
         for (i, b) in public_inputs.iter().zip(pvk.vk.gamma_abc_g1.iter().skip(1)) {
             g_ic.add_assign(&b.mul_bigint(i.into_bigint()));
@@ -59,7 +55,7 @@ impl<E: Pairing, QAP: R1CSToQAP> Groth16<E, QAP> {
             ],
         );
 
-        let test = E::final_exponentiation(qap).ok_or(SynthesisError::UnexpectedIdentity)?;
+        let test = E::final_exponentiation(qap).unwrap();
 
         Ok(test.0 == pvk.alpha_g1_beta_g2)
     }

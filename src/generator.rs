@@ -107,8 +107,8 @@ impl<E: Pairing, QAP: R1CSToQAP> Groth16<E, QAP> {
             .map(|i| usize::from(!b[i].is_zero()))
             .sum();
 
-        let gamma_inverse = gamma.inverse().ok_or(SynthesisError::UnexpectedIdentity)?;
-        let delta_inverse = delta.inverse().ok_or(SynthesisError::UnexpectedIdentity)?;
+        let gamma_inverse = gamma.inverse().unwrap();
+        let delta_inverse = delta.inverse().unwrap();
 
         let gamma_abc = cfg_iter!(a[..num_instance_variables])
             .zip(&b[..num_instance_variables])
