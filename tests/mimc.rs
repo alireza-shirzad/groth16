@@ -25,7 +25,7 @@ use ark_std::test_rng;
 // We'll use these interfaces to construct our circuit.
 use ark_relations::{
     lc, ns,
-    r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError, Variable},
+    gr1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError, Variable},
 };
 
 const MIMC_ROUNDS: usize = 322;
@@ -100,9 +100,9 @@ impl<'a, F: Field> ConstraintSynthesizer<F> for MiMCDemo<'a, F> {
                 cs.new_witness_variable(|| tmp_value.ok_or(SynthesisError::AssignmentMissing))?;
 
             cs.enforce_r1cs_constraint(
-                lc!() + xl + (self.constants[i], Variable::One),
-                lc!() + xl + (self.constants[i], Variable::One),
-                lc!() + tmp,
+                || lc!() + xl + (self.constants[i], Variable::One),
+                || lc!() + xl + (self.constants[i], Variable::One),
+                || lc!() + tmp,
             )?;
 
             // new_xL = xR + (xL + Ci)^3
@@ -124,9 +124,9 @@ impl<'a, F: Field> ConstraintSynthesizer<F> for MiMCDemo<'a, F> {
             };
 
             cs.enforce_r1cs_constraint(
-                lc!() + tmp,
-                lc!() + xl + (self.constants[i], Variable::One),
-                lc!() + new_xl - xr,
+                || lc!() + tmp,
+                || lc!() + xl + (self.constants[i], Variable::One),
+                || lc!() + new_xl - xr,
             )?;
 
             // xR = xL

@@ -1,6 +1,7 @@
 // For benchmark, run:
-//     RAYON_NUM_THREADS=N cargo bench --no-default-features --features "std parallel" -- --nocapture
-// where N is the number of threads you want to use (N = 1 for single-thread).
+//     RAYON_NUM_THREADS=N cargo bench --no-default-features --features "std
+// parallel" -- --nocapture where N is the number of threads you want to use (N
+// = 1 for single-thread).
 
 use ark_bls12_381::{Bls12_381, Fr as BlsFr};
 use ark_crypto_primitives::snark::SNARK;
@@ -11,8 +12,8 @@ use ark_mnt4_753::{Fr as MNT4BigFr, MNT4_753};
 use ark_mnt6_298::{Fr as MNT6Fr, MNT6_298};
 use ark_mnt6_753::{Fr as MNT6BigFr, MNT6_753};
 use ark_relations::{
+    gr1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError},
     lc,
-    r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError},
 };
 
 const NUM_PROVE_REPETITIONS: usize = 1;
@@ -55,10 +56,10 @@ impl<F: PrimeField> ConstraintSynthesizer<F> for DummyCircuit<F> {
         }
 
         for _ in 0..self.num_constraints - 1 {
-            cs.enforce_r1cs_constraint(lc!() + a, lc!() + b, lc!() + c)?;
+            cs.enforce_r1cs_constraint(|| lc!() + a, || lc!() + b, || lc!() + c)?;
         }
 
-        cs.enforce_r1cs_constraint(lc!(), lc!(), lc!())?;
+        cs.enforce_r1cs_constraint(|| lc!(), || lc!(), || lc!())?;
 
         Ok(())
     }

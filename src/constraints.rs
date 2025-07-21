@@ -459,8 +459,8 @@ mod test {
     use ark_mnt6_298::Fr as MNT6Fr;
     use ark_r1cs_std::{alloc::AllocVar, boolean::Boolean, eq::EqGadget};
     use ark_relations::{
+        gr1cs::{ConstraintSynthesizer, ConstraintSystem, ConstraintSystemRef, SynthesisError},
         lc, ns,
-        r1cs::{ConstraintSynthesizer, ConstraintSystem, ConstraintSystemRef, SynthesisError},
     };
     use ark_std::{
         ops::MulAssign,
@@ -496,7 +496,7 @@ mod test {
             }
 
             for _ in 0..self.num_constraints {
-                cs.enforce_r1cs_constraint(lc!() + a, lc!() + b, lc!() + c)
+                cs.enforce_r1cs_constraint(|| lc!() + a, || lc!() + b, || lc!() + c)
                     .unwrap();
             }
             Ok(())
