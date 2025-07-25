@@ -19,14 +19,16 @@ use std::time::{Duration, Instant};
 // Bring in some tools for using pairing-friendly curves
 // We're going to use the BLS12-377 pairing-friendly elliptic curve.
 use ark_bls12_377::{Bls12_377, Fr};
-use ark_ff::Field;
+use ark_ff::{Field, PrimeField};
+use ark_r1cs_std::{
+    alloc::AllocVar,
+    eq::EqGadget,
+    fields::{fp::FpVar, FieldVar},
+};
 use ark_std::test_rng;
 
 // We'll use these interfaces to construct our circuit.
-use ark_relations::{
-    lc, ns,
-    gr1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError, Variable},
-};
+use ark_relations::gr1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError};
 
 const MIMC_ROUNDS: usize = 322;
 
@@ -62,81 +64,51 @@ fn mimc<F: Field>(mut xl: F, mut xr: F, constants: &[F]) -> F {
 
 /// This is our demo circuit for proving knowledge of the
 /// preimage of a MiMC hash invocation.
+#[derive(Copy, Clone)]
 struct MiMCDemo<'a, F: Field> {
     xl: Option<F>,
     xr: Option<F>,
+    output: Option<F>,
     constants: &'a [F],
 }
 
 /// Our demo circuit implements this `Circuit` trait which
 /// is used during paramgen and proving in order to
 /// synthesize the constraint system.
-impl<'a, F: Field> ConstraintSynthesizer<F> for MiMCDemo<'a, F> {
+impl<'a, F: PrimeField> ConstraintSynthesizer<F> for MiMCDemo<'a, F> {
     fn generate_constraints(self, cs: ConstraintSystemRef<F>) -> Result<(), SynthesisError> {
         assert_eq!(self.constants.len(), MIMC_ROUNDS);
 
         // Allocate the first component of the preimage.
-        let mut xl_value = self.xl;
-        let mut xl =
-            cs.new_witness_variable(|| xl_value.ok_or(SynthesisError::AssignmentMissing))?;
+        let mut xl = FpVar::new_witness(cs.clone(), || {
+            self.xl.ok_or(SynthesisError::AssignmentMissing)
+        })?;
 
         // Allocate the second component of the preimage.
-        let mut xr_value = self.xr;
-        let mut xr =
-            cs.new_witness_variable(|| xr_value.ok_or(SynthesisError::AssignmentMissing))?;
+        let mut xr = FpVar::new_witness(cs.clone(), || {
+            self.xr.ok_or(SynthesisError::AssignmentMissing)
+        })?;
+
+        // Allocate the output of the MiMC hash as a public input.
+        let output = FpVar::new_input(cs.clone(), || {
+            self.output.ok_or(SynthesisError::AssignmentMissing)
+        })?;
 
         for i in 0..MIMC_ROUNDS {
-            // xL, xR := xR + (xL + Ci)^3, xL
-            let ns = ns!(cs, "round");
-            let cs = ns.cs();
-
             // tmp = (xL + Ci)^2
-            let tmp_value = xl_value.map(|mut e| {
-                e.add_assign(&self.constants[i]);
-                e.square_in_place();
-                e
-            });
-            let tmp =
-                cs.new_witness_variable(|| tmp_value.ok_or(SynthesisError::AssignmentMissing))?;
-
-            cs.enforce_r1cs_constraint(
-                || lc!() + xl + (self.constants[i], Variable::One),
-                || lc!() + xl + (self.constants[i], Variable::One),
-                || lc!() + tmp,
-            )?;
+            let tmp = (&xl + self.constants[i]).square()?;
 
             // new_xL = xR + (xL + Ci)^3
-            // new_xL = xR + tmp * (xL + Ci)
-            // new_xL - xR = tmp * (xL + Ci)
-            let new_xl_value = xl_value.map(|mut e| {
-                e.add_assign(&self.constants[i]);
-                e.mul_assign(&tmp_value.unwrap());
-                e.add_assign(&xr_value.unwrap());
-                e
-            });
-
-            let new_xl = if i == (MIMC_ROUNDS - 1) {
-                // This is the last round, xL is our image and so
-                // we allocate a public input.
-                cs.new_input_variable(|| new_xl_value.ok_or(SynthesisError::AssignmentMissing))?
-            } else {
-                cs.new_witness_variable(|| new_xl_value.ok_or(SynthesisError::AssignmentMissing))?
-            };
-
-            cs.enforce_r1cs_constraint(
-                || lc!() + tmp,
-                || lc!() + xl + (self.constants[i], Variable::One),
-                || lc!() + new_xl - xr,
-            )?;
+            let new_xl = tmp * (&xl + self.constants[i]) + xr;
 
             // xR = xL
             xr = xl;
-            xr_value = xl_value;
 
             // xL = new_xL
             xl = new_xl;
-            xl_value = new_xl_value;
         }
+        // Enforce that the output is correct.
+        output.enforce_equal(&xl)?;
 
         Ok(())
     }
@@ -161,6 +133,7 @@ fn test_mimc_groth16() {
         let c = MiMCDemo::<Fr> {
             xl: None,
             xr: None,
+            output: None,
             constants: &constants,
         };
 
@@ -196,23 +169,29 @@ fn test_mimc_groth16() {
             let c = MiMCDemo {
                 xl: Some(xl),
                 xr: Some(xr),
+                output: Some(image),
                 constants: &constants,
             };
+
+            let cs = ark_relations::gr1cs::ConstraintSystem::new_ref();
+            cs.set_mode(ark_relations::gr1cs::SynthesisMode::Prove {
+                construct_matrices: true,
+                generate_lc_assignments: false,
+            });
+            c.generate_constraints(cs.clone()).unwrap();
+            cs.finalize();
+            assert!(cs.is_satisfied().unwrap());
 
             // Create a groth16 proof with our parameters.
             let proof = Groth16::<Bls12_377>::prove(&pk, c, &mut rng).unwrap();
             assert!(
                 Groth16::<Bls12_377>::verify_with_processed_vk(&pvk, &[image], &proof).unwrap()
             );
-
-            // proof.write(&mut proof_vec).unwrap();
         }
 
         total_proving += start.elapsed();
 
         let start = Instant::now();
-        // let proof = Proof::read(&proof_vec[..]).unwrap();
-        // Check the proof
 
         total_verifying += start.elapsed();
     }
@@ -222,8 +201,8 @@ fn test_mimc_groth16() {
 
     let verifying_avg = total_verifying / SAMPLES;
     let verifying_avg =
-        verifying_avg.subsec_nanos() as f64 / 1_000_000_000f64 + (verifying_avg.as_secs() as f64);
+        verifying_avg.subsec_nanos() as f64 / 1_000_000_000f64 + (verifying_avg.as_millis() as f64);
 
     println!("Average proving time: {:?} seconds", proving_avg);
-    println!("Average verifying time: {:?} seconds", verifying_avg);
+    println!("Average verifying time: {:?} milliseconds", verifying_avg);
 }

@@ -455,8 +455,9 @@ mod test {
     use ark_crypto_primitives::snark::{constraints::SNARKGadget, SNARK};
     use ark_ec::pairing::Pairing;
     use ark_ff::{Field, UniformRand};
-    use ark_mnt4_298::{constraints::PairingVar as MNT4PairingVar, Fr as MNT4Fr, MNT4_298 as MNT4};
-    use ark_mnt6_298::Fr as MNT6Fr;
+    use ark_mnt4_298::{
+        constraints::PairingVar as MNT4PairingVar, Fq as MNT6Fr, Fr as MNT4Fr, MNT4_298 as MNT4,
+    };
     use ark_r1cs_std::{alloc::AllocVar, boolean::Boolean, eq::EqGadget};
     use ark_relations::{
         gr1cs::{ConstraintSynthesizer, ConstraintSystem, ConstraintSystemRef, SynthesisError},
@@ -492,7 +493,7 @@ mod test {
             })?;
 
             for _ in 0..(self.num_variables - 3) {
-                cs.new_witness_variable(|| self.a.ok_or(SynthesisError::AssignmentMissing))?;
+                let _ = cs.new_witness_variable(|| self.a.ok_or(SynthesisError::AssignmentMissing))?;
             }
 
             for _ in 0..self.num_constraints {

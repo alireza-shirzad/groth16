@@ -194,12 +194,13 @@ impl<E: Pairing, QAP: R1CSToQAP> Groth16<E, QAP> {
         // Synthesize the circuit.
         let synthesis_time = start_timer!(|| "Constraint synthesis");
         circuit.generate_constraints(cs.clone())?;
-        debug_assert!(cs.is_satisfied().unwrap());
         end_timer!(synthesis_time);
 
         let lc_time = start_timer!(|| "Inlining LCs");
         cs.finalize();
         end_timer!(lc_time);
+
+        debug_assert!(cs.is_satisfied().unwrap());
 
         let witness_map_time = start_timer!(|| "R1CS to QAP witness map");
         let h = QAP::witness_map::<E::ScalarField, D<E::ScalarField>>(cs.clone())?;

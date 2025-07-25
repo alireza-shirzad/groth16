@@ -5,7 +5,7 @@ use crate::{r1cs_to_qap::R1CSToQAP, Groth16};
 
 use super::{PreparedVerifyingKey, Proof, VerifyingKey};
 
-use ark_relations::gr1cs::{Result as R1CSResult, SynthesisError};
+use ark_relations::gr1cs::Result as R1CSResult;
 
 use core::ops::{AddAssign, Neg};
 
