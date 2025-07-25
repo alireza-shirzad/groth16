@@ -26,16 +26,18 @@ ark-ec = { git = "https://github.com/arkworks-rs/algebra.git", default-features 
 ark-serialize = { git = "https://github.com/arkworks-rs/algebra.git", default-features = false, features = [ "derive" ] }
 ark-poly = { git = "https://github.com/arkworks-rs/algebra.git", default-features = false }
 ark-std = { version = "0.5.0", default-features = false }
+
 ark-relations = { git = "https://github.com/arkworks-rs/snark.git", default-features = true }
-ark-crypto-primitives = { git = "https://github.com/arkworks-rs/crypto-primitives.git", default-features = false, features = [ "snark", "sponge" ] }
+ark-snark = { git = "https://github.com/arkworks-rs/snark.git", default-features = false }
+
 ark-r1cs-std = { git = "https://github.com/arkworks-rs/r1cs-std.git", default-features = true, optional = true }
+ark-crypto-primitives = { git = "https://github.com/arkworks-rs/crypto-primitives.git", default-features = false, features = [ "snark", "sponge" ], optional = true }
 tracing = { version = "0.1", default-features = false, features = ["attributes" ], optional = true }
-derivative = { version = "2.0", features = ["use_core"], optional = true }
+educe = { version = "0.6.0", default-features = false, features = [ "Clone" ], optional = true }
 
 rayon = { version = "1", optional = true }
 
 [dev-dependencies]
-csv = { version = "1" }
 ark-bls12-381 = { git = "https://github.com/arkworks-rs/algebra.git", default-features = false, features = [ "curve" ] }
 ark-bls12-377 = { git = "https://github.com/arkworks-rs/algebra.git", default-features = false, features = [ "curve" ] }
 ark-bn254 = { git = "https://github.com/arkworks-rs/algebra.git", default-features = false, features = [ "curve" ] }
@@ -68,7 +70,7 @@ r1cs = [
     "ark-crypto-primitives/constraints",
     "ark-r1cs-std",
     "tracing",
-    "derivative",
+    "educe",
 ]
 print-trace = ["ark-std/print-trace"]
 

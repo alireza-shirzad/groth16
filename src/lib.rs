@@ -15,10 +15,6 @@
 #[macro_use]
 extern crate ark_std;
 
-#[cfg(feature = "r1cs")]
-#[macro_use]
-extern crate derivative;
-
 /// Reduce an R1CS instance to a *Quadratic Arithmetic Program* instance.
 pub mod r1cs_to_qap;
 
@@ -43,9 +39,9 @@ mod test;
 
 pub use self::{data_structures::*, verifier::*};
 
-use ark_crypto_primitives::snark::*;
 use ark_ec::pairing::Pairing;
 use ark_relations::gr1cs::{ConstraintSynthesizer, SynthesisError};
+use ark_snark::*;
 use ark_std::{marker::PhantomData, rand::RngCore, vec::Vec};
 use r1cs_to_qap::{LibsnarkReduction, R1CSToQAP};
 

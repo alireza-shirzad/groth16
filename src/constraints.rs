@@ -27,8 +27,8 @@ use ark_std::{borrow::Borrow, marker::PhantomData, vec::Vec};
 type BasePrimeField<E> = <<E as Pairing>::BaseField as Field>::BasePrimeField;
 
 /// The proof variable for the Groth16 construction
-#[derive(Derivative)]
-#[derivative(Clone(bound = "P::G1Var: Clone, P::G2Var: Clone"))]
+#[derive(educe::Educe)]
+#[educe(Clone(bound = "P::G1Var: Clone, P::G2Var: Clone"))]
 pub struct ProofVar<E: Pairing, P: PairingVar<E>> {
     /// The `A` element in `G1`.
     pub a: P::G1Var,
@@ -39,8 +39,8 @@ pub struct ProofVar<E: Pairing, P: PairingVar<E>> {
 }
 
 /// A variable representing the Groth16 verifying key in the constraint system.
-#[derive(Derivative)]
-#[derivative(Clone(
+#[derive(educe::Educe)]
+#[educe(Clone(
     bound = "P::G1Var: Clone, P::GTVar: Clone, P::G1PreparedVar: Clone, P::G2PreparedVar: Clone"
 ))]
 pub struct VerifyingKeyVar<E: Pairing, P: PairingVar<E>> {
@@ -111,8 +111,8 @@ where
 
 /// Preprocessed verification key parameters variable for the Groth16
 /// construction
-#[derive(Derivative)]
-#[derivative(
+#[derive(educe::Educe)]
+#[educe(
     Clone(bound = "P::G1Var: Clone, P::GTVar: Clone, P::G1PreparedVar: Clone, \
     P::G2PreparedVar: Clone, ")
 )]
@@ -493,7 +493,8 @@ mod test {
             })?;
 
             for _ in 0..(self.num_variables - 3) {
-                let _ = cs.new_witness_variable(|| self.a.ok_or(SynthesisError::AssignmentMissing))?;
+                let _ =
+                    cs.new_witness_variable(|| self.a.ok_or(SynthesisError::AssignmentMissing))?;
             }
 
             for _ in 0..self.num_constraints {
