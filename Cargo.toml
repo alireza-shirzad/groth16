@@ -43,7 +43,6 @@ ark-bls12-377 = { git = "https://github.com/arkworks-rs/algebra.git", default-fe
 ark-bn254 = { git = "https://github.com/arkworks-rs/algebra.git", default-features = false, features = [ "curve" ] }
 ark-bw6-761 = { git = "https://github.com/arkworks-rs/algebra.git", default-features = false }
 ark-mnt4-298 = { git = "https://github.com/arkworks-rs/algebra.git", default-features = false, features = [ "curve", "r1cs" ] }
-ark-mnt6-298 = { git = "https://github.com/arkworks-rs/algebra.git", default-features = false }
 ark-r1cs-std = { git = "https://github.com/arkworks-rs/r1cs-std.git", default-features = true }
 
 
@@ -115,5 +114,4 @@ ark-bls12-377 = { git = "https://github.com/arkworks-rs/algebra.git" }
 ark-bn254 = { git = "https://github.com/arkworks-rs/algebra.git" }
 ark-bw6-761 = { git = "https://github.com/arkworks-rs/algebra.git" }
 ark-mnt4-298 = { git = "https://github.com/arkworks-rs/algebra.git" }
-ark-mnt6-298 = { git = "https://github.com/arkworks-rs/algebra.git" }
 ark-r1cs-std = { git = "https://github.com/arkworks-rs/r1cs-std.git" }

@@ -8,7 +8,6 @@ use ark_crypto_primitives::snark::SNARK;
 use ark_ff::{PrimeField, UniformRand};
 use ark_groth16::Groth16;
 use ark_mnt4_298::{Fr as MNT4Fr, MNT4_298};
-use ark_mnt6_298::{Fr as MNT6Fr, MNT6_298};
 use ark_relations::{
     gr1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError},
     lc,
@@ -127,14 +126,12 @@ fn bench_prove() {
     use ark_std::rand::SeedableRng;
     groth16_prove_bench!(bls, BlsFr, Bls12_381);
     groth16_prove_bench!(mnt4, MNT4Fr, MNT4_298);
-    groth16_prove_bench!(mnt6, MNT6Fr, MNT6_298);
 }
 
 fn bench_verify() {
     use ark_std::rand::SeedableRng;
     groth16_verify_bench!(bls, BlsFr, Bls12_381);
     groth16_verify_bench!(mnt4, MNT4Fr, MNT4_298);
-    groth16_verify_bench!(mnt6, MNT6Fr, MNT6_298);
 }
 
 fn main() {
